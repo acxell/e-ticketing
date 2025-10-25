@@ -1,0 +1,145 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              Int         @id @default(autoincrement())
+  username        String      @unique
+  email           String      @unique
+  password        String
+  fullName        String?
+  phone           String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  assignedTickets Ticket[]    @relation("assignedTickets")
+  createdTickets  Ticket[]    @relation("createdTickets")
+  ticketLogs      TicketLog[]
+  userRoles       UserRole[]
+}
+
+model Role {
+  id              Int              @id @default(autoincrement())
+  name            RoleName         @unique
+  label           String?
+  createdAt       DateTime         @default(now())
+  rolePermissions RolePermission[]
+  userRoles       UserRole[]
+}
+
+model Permission {
+  id              Int              @id @default(autoincrement())
+  key             String           @unique
+  label           String?
+  createdAt       DateTime         @default(now())
+  rolePermissions RolePermission[]
+}
+
+model UserRole {
+  id     Int  @id @default(autoincrement())
+  userId Int
+  roleId Int
+  role   Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId])
+}
+
+model RolePermission {
+  id           Int        @id @default(autoincrement())
+  roleId       Int
+  permissionId Int
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+}
+
+model Customer {
+  id           Int      @id @default(autoincrement())
+  customerCode String   @unique
+  fullName     String
+  email        String?
+  phone        String?
+  address      String?
+  packageId    Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  package      Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  tickets      Ticket[]
+}
+
+model Package {
+  id          Int        @id @default(autoincrement())
+  code        String     @unique
+  name        String
+  description String?
+  price       Float
+  createdAt   DateTime   @default(now())
+  customers   Customer[]
+}
+
+model Ticket {
+  id           Int                @id @default(autoincrement())
+  ticketCode   String             @unique
+  title        String
+  description  String?
+  status       TicketStatus       @default(OPEN)
+  priority     Priority           @default(MEDIUM)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  customerId   Int
+  createdById  Int?
+  assignedToId Int?
+  assignedTo   User?              @relation("assignedTickets", fields: [assignedToId], references: [id])
+  createdBy    User?              @relation("createdTickets", fields: [createdById], references: [id])
+  customer     Customer           @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  attachments  TicketAttachment[]
+  ticketLogs   TicketLog[]
+}
+
+model TicketLog {
+  id         Int           @id @default(autoincrement())
+  ticketId   Int
+  actorId    Int?
+  note       String?
+  fromStatus TicketStatus?
+  toStatus   TicketStatus?
+  createdAt  DateTime      @default(now())
+  actor      User?         @relation(fields: [actorId], references: [id])
+  ticket     Ticket        @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+}
+
+model TicketAttachment {
+  id          Int      @id @default(autoincrement())
+  ticketId    Int
+  images      Json
+  description String?
+  uploadedAt  DateTime @default(now())
+  ticket      Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+}
+
+enum RoleName {
+  ADMIN
+  AGENT_NOC
+  CUSTOMER_SERVICE
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
