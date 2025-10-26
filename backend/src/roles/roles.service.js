@@ -33,12 +33,10 @@ const createRole = async (newRoleData) => {
     throw new Error("Role label is required");
   }
 
-  // Validate role name format
   if (!['ADMIN', 'AGENT_NOC', 'CUSTOMER_SERVICE'].includes(newRoleData.name)) {
     throw new Error("Invalid role name. Must be one of: ADMIN, AGENT_NOC, CUSTOMER_SERVICE");
   }
 
-  // If permissions are provided, validate their existence
   if (newRoleData.permissions && newRoleData.permissions.length > 0) {
     const invalidPermissions = await prisma.permission.count({
       where: {
@@ -58,7 +56,7 @@ const createRole = async (newRoleData) => {
 };
 
 const deleteRoleById = async (id) => {
-  const role = await getRoleById(id); // This will throw if role doesn't exist
+  const role = await getRoleById(id);
   await deleteRole(parseInt(id));
   return { message: 'Role deleted successfully' };
 };
@@ -68,12 +66,10 @@ const putRoleById = async (id, roleData) => {
     throw new Error("Name and label are required for full update");
   }
 
-  // Validate role name format if it's being changed
   if (roleData.name && !['ADMIN', 'AGENT_NOC', 'CUSTOMER_SERVICE'].includes(roleData.name)) {
     throw new Error("Invalid role name. Must be one of: ADMIN, AGENT_NOC, CUSTOMER_SERVICE");
   }
 
-  // If permissions are provided, validate their existence
   if (roleData.permissions && roleData.permissions.length > 0) {
     const invalidPermissions = await prisma.permission.count({
       where: {
@@ -92,12 +88,10 @@ const putRoleById = async (id, roleData) => {
 };
 
 const patchRoleById = async (id, roleData) => {
-  // For patch, we don't require all fields
   if (Object.keys(roleData).length === 0) {
     throw new Error("No data provided for update");
   }
 
-  // Validate role name format if it's being changed
   if (roleData.name && !['ADMIN', 'AGENT_NOC', 'CUSTOMER_SERVICE'].includes(roleData.name)) {
     throw new Error("Invalid role name. Must be one of: ADMIN, AGENT_NOC, CUSTOMER_SERVICE");
   }

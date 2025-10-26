@@ -33,7 +33,7 @@ const createNewPermission = async (permissionData) => {
 };
 
 const updatePermissionById = async (id, permissionData) => {
-  await getPermissionById(id); // Verify permission exists
+  await getPermissionById(id); 
 
   if (permissionData.key) {
     const existingPermission = await findPermissionByKey(permissionData.key);
@@ -46,7 +46,7 @@ const updatePermissionById = async (id, permissionData) => {
 };
 
 const deletePermissionById = async (id) => {
-  await getPermissionById(id); // Verify permission exists
+  await getPermissionById(id); 
   return await deletePermission(id);
 };
 

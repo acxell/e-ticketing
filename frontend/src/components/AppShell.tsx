@@ -28,18 +28,15 @@ export default function AppShellLayout({ children }: { children: React.ReactNode
   useEffect(() => {
     const initializeUser = async () => {
       try {
-        // Try to load from localStorage first
         const storedUserData = localStorage.getItem('userData');
         if (!user && storedUserData) {
           setUser(JSON.parse(storedUserData));
         }
         
-        // Then fetch fresh data from the server
         const userData = await fetchCurrentUser();
         setUser(userData);
       } catch (error) {
         console.error('Error loading user data:', error);
-        // If there's an error fetching user data, redirect to login
         router.push('/login');
       }
     };
@@ -57,7 +54,6 @@ export default function AppShellLayout({ children }: { children: React.ReactNode
   const getNavigationLinks = () => {
     const links = [];
 
-    // Only CS and Admin can access customers
     if (hasRole(user, [ROLES.ADMIN, ROLES.CUSTOMER_SERVICE])) {
       links.push({
         label: 'Customers',
@@ -76,7 +72,6 @@ export default function AppShellLayout({ children }: { children: React.ReactNode
       });
     }
 
-    // All roles can access tickets but with different permissions
     links.push({
       label: 'Tickets',
       href: '/tickets',
@@ -84,7 +79,6 @@ export default function AppShellLayout({ children }: { children: React.ReactNode
       permission: PERMISSIONS.TICKETS.READ
     });
 
-    // Only Admin can access users management
     if (hasRole(user, [ROLES.ADMIN])) {
       links.push({
         label: 'Users',

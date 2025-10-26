@@ -43,7 +43,7 @@ const createUser = async (userData) => {
         create: {
           role: {
             connect: {
-              name: 'CUSTOMER_SERVICE' // Default role for new users
+              name: 'CUSTOMER_SERVICE'
             }
           }
         }

@@ -31,11 +31,9 @@ export default function LoginPage() {
       const response = await api.post('/auth/login', values);
       const { token, user } = response.data.data;
 
-      // Set token in cookie and axios default headers
       setAuthToken(token);
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       
-      // Update auth store
       setUser(user);
       
       notifications.show({

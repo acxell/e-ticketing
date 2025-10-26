@@ -73,7 +73,6 @@ const createCustomer = async (customerData) => {
 };
 
 const updateCustomer = async (id, customerData) => {
-  // Extract only updatable fields and ensure correct types
   const {
     fullName,
     email,

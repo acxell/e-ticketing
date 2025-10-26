@@ -138,12 +138,10 @@ const createTicket = async (ticketData, userId) => {
             note: `Ticket ${ticketCode} created`,
             toStatus: "OPEN",
           },
-          // Add assignment log if there's an initial assignee
           ...(ticketData.assignedToId ? [{
             actorId: userId,
             note: `Initial assignment set`,
           }] : []),
-          // Add priority log if priority is set
           ...(ticketData.priority ? [{
             actorId: userId,
             note: `Initial priority set to ${ticketData.priority}`,
@@ -171,7 +169,6 @@ const updateTicketStatus = async (id, status, userId, note) => {
     throw new Error("Ticket not found");
   }
 
-  // Validate status transition
   if (status === "CLOSED" && ticket.status !== "RESOLVED") {
     throw new Error("Ticket must be RESOLVED before it can be CLOSED");
   }
@@ -209,7 +206,6 @@ const assignTicket = async (id, assignedToId, userId) => {
     throw new Error("Ticket not found");
   }
 
-  // Get the assigned user's info for the log message
   const assignedUser = await prisma.user.findUnique({
     where: { id: parseInt(assignedToId) },
     select: { fullName: true, username: true }
@@ -253,8 +249,7 @@ const updateTicket = async (id, updateData, userId) => {
   }
 
   const changes = [];
-  
-  // Track changes for logging
+
   if (updateData.title !== ticket.title) {
     changes.push(`Title updated from "${ticket.title}" to "${updateData.title}"`);
   }
@@ -265,7 +260,6 @@ const updateTicket = async (id, updateData, userId) => {
     changes.push(`Priority changed from ${ticket.priority} to ${updateData.priority}`);
   }
 
-  // Create logs for all changes
   const ticketLogs = changes.map(change => ({
     actorId: userId,
     note: change,

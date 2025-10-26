@@ -10,7 +10,7 @@ const {
   patchRoleById,
 } = require("./roles.service");
 
-// Get all roles - accessible by authenticated users
+// Get all roles
 router.get("/", authenticate, async (req, res) => {
   try {
     const role = await getAllRole();
@@ -24,7 +24,7 @@ router.get("/", authenticate, async (req, res) => {
   }
 });
 
-// Get role by ID - accessible by authenticated users
+// Get role by ID
 router.get("/:id", authenticate, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
@@ -35,7 +35,7 @@ router.get("/:id", authenticate, async (req, res) => {
   }
 });
 
-// Create new role - admin only
+// Create new role
 router.post("/", authenticate, authorize(['roles.manage']), async (req, res) => {
   try {
     const newRoleData = req.body;
@@ -49,7 +49,7 @@ router.post("/", authenticate, authorize(['roles.manage']), async (req, res) => 
   }
 });
 
-// Delete role - roles.manage only
+// Delete role
 router.delete("/:id", authenticate, authorize(['roles.manage']), async (req, res) => {
   try {
     const id = req.params.id;
@@ -60,7 +60,7 @@ router.delete("/:id", authenticate, authorize(['roles.manage']), async (req, res
   }
 });
 
-// Update role (full update) - roles.manage only
+// Update role (full update)
 router.put("/:id", authenticate, authorize(['roles.manage']), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
@@ -75,7 +75,7 @@ router.put("/:id", authenticate, authorize(['roles.manage']), async (req, res) =
   }
 });
 
-// Update role (partial update) - roles.manage only
+// Update role (partial update)
 router.patch("/:id", authenticate, authorize(['roles.manage']), async (req, res) => {
   try {
     const id = parseInt(req.params.id);

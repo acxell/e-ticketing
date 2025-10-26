@@ -107,7 +107,6 @@ class UsersRepository {
 
   async update(id, data) {
     return prisma.$transaction(async (prisma) => {
-      // Update user details
       const updatedUser = await prisma.user.update({
         where: { id: parseInt(id) },
         data: {
@@ -131,14 +130,11 @@ class UsersRepository {
         }
       });
 
-      // Update role if provided
       if (data.roleId) {
-        // Delete existing roles
         await prisma.userRole.deleteMany({
           where: { userId: parseInt(id) }
         });
 
-        // Create new role assignment
         await prisma.userRole.create({
           data: {
             userId: parseInt(id),

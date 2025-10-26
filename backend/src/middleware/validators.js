@@ -3,7 +3,6 @@ const { body, param, validationResult } = require('express-validator');
 const handleValidationErrors = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    // Format errors into a user-friendly message
     const errorMessages = errors.array().map(err => {
       const fieldName = err.path.charAt(0).toUpperCase() + err.path.slice(1);
       return `${fieldName}: ${err.msg}`;
@@ -11,9 +10,9 @@ const handleValidationErrors = (req, res, next) => {
 
     return res.status(400).json({ 
       success: false,
-      message: errorMessages.join('\n'), // Each error on a new line
-      error: errorMessages.join('\n'),   // For backward compatibility
-      details: errors.array()            // Keep detailed errors for debugging
+      message: errorMessages.join('\n'), 
+      error: errorMessages.join('\n'), 
+      details: errors.array() 
     });
   }
   next();
@@ -78,7 +77,7 @@ const userValidationRules = () => {
       .normalizeEmail(),
 
     body('password')
-      .if((value, { req }) => !req.params.id) // Only required for new users
+      .if((value, { req }) => !req.params.id)
       .notEmpty()
       .withMessage('Password is required')
       .isLength({ min: 8 })

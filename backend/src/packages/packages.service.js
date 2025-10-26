@@ -31,7 +31,7 @@ const createNewPackage = async (packageData) => {
 };
 
 const updatePackageById = async (id, packageData) => {
-  await getPackageById(id); // Verify package exists
+  await getPackageById(id);
   
   if (packageData.price && packageData.price <= 0) {
     throw new Error('Price must be greater than 0');
@@ -41,7 +41,7 @@ const updatePackageById = async (id, packageData) => {
 };
 
 const deletePackageById = async (id) => {
-  await getPackageById(id); // Verify package exists
+  await getPackageById(id);
   return await deletePackage(id);
 };
 

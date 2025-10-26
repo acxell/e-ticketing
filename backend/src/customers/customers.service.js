@@ -26,12 +26,12 @@ const createNewCustomer = async (customerData) => {
 };
 
 const updateCustomerById = async (id, customerData) => {
-  await getCustomerById(id); // Verify customer exists
+  await getCustomerById(id);
   return await updateCustomer(id, customerData);
 };
 
 const deleteCustomerById = async (id) => {
-  await getCustomerById(id); // Verify customer exists
+  await getCustomerById(id);
   return await deleteCustomer(id);
 };
 

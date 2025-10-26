@@ -78,7 +78,6 @@ export default function TicketDetailPage({ params }: { params: { id: string } })
     },
   });
 
-  // Query for assignable users
   const { data: assignableUsers } = useQuery(
     ['assignableUsers'],
     async () => {
@@ -119,7 +118,6 @@ export default function TicketDetailPage({ params }: { params: { id: string } })
     }
   );
 
-  // Add assignMutation
   const assignMutation = useMutation(
     async (assignedToId: number) => {
       const { data } = await api.patch(`/tickets/${ticketId}/assign`, { assignedToId });
@@ -166,10 +164,8 @@ export default function TicketDetailPage({ params }: { params: { id: string } })
 
   const ticket: Ticket = ticketData.data;
 
-  // Only NOC and Admin can update status
   const canUpdateStatus = hasRole(user, [ROLES.ADMIN, ROLES.AGENT_NOC]);
 
-  // Only NOC and Admin can set priority
   const canSetPriority = hasRole(user, [ROLES.ADMIN, ROLES.AGENT_NOC]);
 
   return (

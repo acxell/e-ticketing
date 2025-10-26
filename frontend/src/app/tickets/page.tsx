@@ -31,10 +31,8 @@ import { hasRole, ROLES } from '@/lib/permissions';
 export default function TicketsPage() {
   const { user } = useAuthStore();
   
-  // Only CS can create tickets
   const canCreateTicket = hasRole(user, [ROLES.ADMIN, ROLES.CUSTOMER_SERVICE]);
   
-  // Only NOC and Admin can set priority
   const canSetPriority = hasRole(user, [ROLES.ADMIN, ROLES.AGENT_NOC]);
 
   const [opened, setOpened] = useState(false);
@@ -44,7 +42,6 @@ export default function TicketsPage() {
   const queryClient = useQueryClient();
   const router = useRouter();
 
-  // Fetch tickets with filters
   const { data: ticketsData, isLoading } = useQuery(
     ['tickets', searchQuery, statusFilter, priorityFilter],
     async () => {
@@ -61,7 +58,6 @@ export default function TicketsPage() {
     }
   );
 
-  // Fetch customers for dropdown
   const { data: customersData } = useQuery('customers', async () => {
     const response = await api.get('/customers');
     return response.data;

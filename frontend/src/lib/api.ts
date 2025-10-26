@@ -10,7 +10,6 @@ export const api = axios.create({
   },
 });
 
-// Initialize auth header from cookie if exists
 const token = getCookie('token');
 if (token) {
   api.defaults.headers.common['Authorization'] = `Bearer ${token}`;

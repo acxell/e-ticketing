@@ -21,7 +21,6 @@ export const useAuthStore = create<AuthStore>()(
       },
       setUser: (user) => {
         set({ user });
-        // Store user data in localStorage
         if (typeof window !== 'undefined') {
           localStorage.setItem('userData', JSON.stringify(user));
         }

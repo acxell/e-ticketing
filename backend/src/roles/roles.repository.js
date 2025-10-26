@@ -84,7 +84,6 @@ const findRoleByName = async (name) => {
 };
 
 const makeRole = async (newRoleData) => {
-  // Check if role with same name already exists
   const existingRole = await findRoleByName(newRoleData.name);
   if (existingRole) {
     throw new Error('Role with this name already exists');
@@ -122,12 +121,10 @@ const deleteRoleById = async (id) => {
     throw new Error('Role not found');
   }
 
-  // Check if it's a system role (ADMIN, AGENT_NOC, CUSTOMER_SERVICE)
   if (['ADMIN', 'AGENT_NOC', 'CUSTOMER_SERVICE'].includes(role.name)) {
     throw new Error('Cannot delete system roles');
   }
 
-  // Delete the role and cascade to related records
   return await prisma.role.delete({
     where: {
       id: parseInt(id),
@@ -141,13 +138,11 @@ const updateRoleById = async (id, roleData) => {
     throw new Error('Role not found');
   }
 
-  // Check if it's a system role and trying to change the name
   if (['ADMIN', 'AGENT_NOC', 'CUSTOMER_SERVICE'].includes(existingRole.name) && 
       roleData.name && roleData.name !== existingRole.name) {
     throw new Error('Cannot modify system role names');
   }
 
-  // If changing name, check for duplicates
   if (roleData.name && roleData.name !== existingRole.name) {
     const nameExists = await findRoleByName(roleData.name);
     if (nameExists) {
@@ -155,16 +150,13 @@ const updateRoleById = async (id, roleData) => {
     }
   }
 
-  // Start transaction to update role and permissions
   return await prisma.$transaction(async (tx) => {
-    // Delete existing permissions if new permissions are provided
     if (roleData.permissions) {
       await tx.rolePermission.deleteMany({
         where: { roleId: parseInt(id) }
       });
     }
 
-    // Update role with new data
     return await tx.role.update({
       where: {
         id: parseInt(id),

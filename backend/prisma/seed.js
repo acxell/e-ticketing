@@ -64,6 +64,7 @@ async function main() {
     "customers.write",
     "tickets.create",
     "tickets.read",
+    "packages.manage"
   ];
   for (const k of csPermKeys) {
     const perm = permissionRecords.find((p) => p.key === k);

@@ -9,7 +9,6 @@ dotenv.config();
 
 const PORT = process.env.PORT || 3000;
 
-// CORS configuration
 const corsOptions = {
   origin: process.env.FRONTEND_URL || "http://localhost:3000",
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
@@ -23,7 +22,6 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(apiResponse);
 
-// Import controllers
 const authController = require("./auth/auth.controller");
 const rolesController = require("./roles/roles.controller");
 const roleAssignmentsController = require("./roles/role-assignments.controller");
@@ -33,7 +31,6 @@ const customersController = require("./customers/customers.controller");
 const packagesController = require("./packages/packages.controller");
 const usersController = require("./users/users.controller");
 
-// Route middlewares
 app.use("/auth", authController);
 app.use("/roles", rolesController);
 app.use("/role-assignments", roleAssignmentsController);
@@ -47,7 +44,6 @@ app.listen(PORT, () => {
   console.log("Server running on port:" + PORT);
 });
 
-// Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send('Something broke!');

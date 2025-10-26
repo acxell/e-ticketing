@@ -15,7 +15,6 @@ class UsersService {
   }
 
   async createUser(userData) {
-    // Check if username or email exists
     const existingUser = await usersRepository.findByUsernameOrEmail(
       userData.username,
       userData.email
@@ -25,7 +24,6 @@ class UsersService {
       throw new Error('Username or email already exists');
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(userData.password, 10);
     userData.password = hashedPassword;
 
@@ -33,7 +31,6 @@ class UsersService {
   }
 
   async updateUser(id, userData) {
-    // Check if username or email exists for other users
     const existingUser = await usersRepository.findByUsernameOrEmailExcept(
       userData.username,
       userData.email,

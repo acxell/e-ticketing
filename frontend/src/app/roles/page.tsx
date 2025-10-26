@@ -48,19 +48,16 @@ export default function RolesPage() {
     }
   });
 
-  // Query roles
   const { data: rolesData, isLoading } = useQuery(['roles'], async () => {
     const response = await api.get('/roles');
     return response.data;
   });
 
-  // Query permissions for multiselect
   const { data: permissionsData } = useQuery(['permissions'], async () => {
     const response = await api.get('/permissions');
     return response.data;
   });
 
-  // Create role mutation
   const createMutation = useMutation(
     async (values: typeof form.values) => {
       const response = await api.post('/roles', values);
@@ -87,7 +84,6 @@ export default function RolesPage() {
     }
   );
 
-  // Update role mutation
   const updateMutation = useMutation(
     async (values: typeof form.values) => {
       const response = await api.put('/roles/' + selectedRole.id, values);
@@ -115,7 +111,6 @@ export default function RolesPage() {
     }
   );
 
-  // Delete role mutation
   const deleteMutation = useMutation(
     async (id: number) => {
       const response = await api.delete('/roles/' + id);
