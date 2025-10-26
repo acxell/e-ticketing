@@ -8,6 +8,11 @@ const {
   deletePackage
 } = require('./packages.service');
 const { authenticate, authorize } = require('../middleware/auth');
+const { 
+  packageValidationRules,
+  validateIdParam,
+  handleValidationErrors 
+} = require('../middleware/validators');
 
 // Get all packages
 router.get('/', authenticate, async (req, res) => {
@@ -28,7 +33,11 @@ router.get('/', authenticate, async (req, res) => {
 });
 
 // Get package by ID
-router.get('/:id', authenticate, async (req, res) => {
+router.get('/:id', 
+  authenticate,
+  validateIdParam(),
+  handleValidationErrors,
+  async (req, res) => {
   try {
     const package = await getPackageById(req.params.id);
     res.json(package);
@@ -38,7 +47,12 @@ router.get('/:id', authenticate, async (req, res) => {
 });
 
 // Create new package
-router.post('/', authenticate, authorize(['packages.manage']), async (req, res) => {
+router.post('/', 
+  authenticate, 
+  authorize(['packages.manage']),
+  packageValidationRules(),
+  handleValidationErrors,
+  async (req, res) => {
   try {
     const package = await createPackage(req.body);
     res.status(201).json(package);
@@ -48,7 +62,13 @@ router.post('/', authenticate, authorize(['packages.manage']), async (req, res) 
 });
 
 // Update package
-router.patch('/:id', authenticate, authorize(['packages.manage']), async (req, res) => {
+router.patch('/:id', 
+  authenticate, 
+  authorize(['packages.manage']),
+  validateIdParam(),
+  packageValidationRules(),
+  handleValidationErrors,
+  async (req, res) => {
   try {
     const package = await updatePackage(req.params.id, req.body);
     res.json(package);
@@ -58,7 +78,12 @@ router.patch('/:id', authenticate, authorize(['packages.manage']), async (req, r
 });
 
 // Delete package
-router.delete('/:id', authenticate, authorize(['packages.manage']), async (req, res) => {
+router.delete('/:id', 
+  authenticate, 
+  authorize(['packages.manage']),
+  validateIdParam(),
+  handleValidationErrors,
+  async (req, res) => {
   try {
     await deletePackage(req.params.id);
     res.json({ message: 'Package deleted successfully' });

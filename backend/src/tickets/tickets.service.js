@@ -4,7 +4,7 @@ const {
   createTicket,
   updateTicketStatus,
   assignTicket,
-  addTicketAttachment
+  updateTicket,
 } = require('./tickets.repository');
 
 const getAllTickets = async (filters) => {
@@ -26,6 +26,22 @@ const createNewTicket = async (ticketData, userId) => {
   return await createTicket(ticketData, userId);
 };
 
+const updateTicketDetails = async (id, updateData, userId) => {
+  const allowedFields = ['title', 'description', 'priority'];
+  const filteredData = Object.keys(updateData)
+    .filter(key => allowedFields.includes(key))
+    .reduce((obj, key) => {
+      obj[key] = updateData[key];
+      return obj;
+    }, {});
+
+  if (Object.keys(filteredData).length === 0) {
+    throw new Error('No valid fields to update');
+  }
+
+  return await updateTicket(id, filteredData, userId);
+};
+
 const updateStatus = async (id, status, userId, note) => {
   if (!['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'].includes(status)) {
     throw new Error('Invalid status');
@@ -40,18 +56,11 @@ const assignTicketToUser = async (id, assignedToId, userId) => {
   return await assignTicket(id, assignedToId, userId);
 };
 
-const addAttachment = async (id, attachmentData, userId) => {
-  if (!attachmentData.images) {
-    throw new Error('Attachment images are required');
-  }
-  return await addTicketAttachment(id, attachmentData, userId);
-};
-
 module.exports = {
   getAllTickets,
   getTicketById,
   createNewTicket,
+  updateTicketDetails,
   updateStatus,
   assignTicketToUser,
-  addAttachment
 };

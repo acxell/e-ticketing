@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const { authenticate, authorize } = require('../middleware/auth');
+const { customerValidationRules, handleValidationErrors } = require('../middleware/validators');
 const {
   getAllCustomers,
   getCustomerById,
@@ -7,7 +9,6 @@ const {
   updateCustomer,
   deleteCustomer
 } = require('./customers.service');
-const { authenticate, authorize } = require('../middleware/auth');
 
 // Get all customers with optional filters
 router.get('/', authenticate, authorize(['customers.read']), async (req, res) => {
@@ -37,34 +38,45 @@ router.get('/:id', authenticate, authorize(['customers.read']), async (req, res)
   }
 });
 
-// Create new customer
-router.post('/', authenticate, authorize(['customers.write']), async (req, res) => {
-  try {
-    const customer = await createNewCustomer(req.body);
-    res.status(201).json(customer);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
+// Create new customer - with validation
+router.post('/', 
+  authenticate,
+  authorize(['customers.write']),
+  customerValidationRules(),
+  handleValidationErrors,
+  async (req, res) => {
+    try {
+      const customer = await createNewCustomer(req.body);
+      res.status(201).json({
+        success: true,
+        data: customer,
+        message: 'Customer created successfully'
+      });
+    } catch (err) {
+      res.error(err.message);
+    }
   }
-});
+);
 
-// Update customer
-router.patch('/:id',authenticate, authorize(['customers.write']), async (req, res) => {
-  try {
-    const customerId = parseInt(req.params.id);
-    const customer = await updateCustomer(customerId, req.body);
-    
-    res.json({
-      success: true,
-      data: customer,
-      message: 'Customer updated successfully'
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      error: error.message
-    });
+// Update customer - with validation
+router.patch('/:id',
+  authenticate,
+  authorize(['customers.write']),
+  customerValidationRules(),
+  handleValidationErrors,
+  async (req, res) => {
+    try {
+      const customer = await updateCustomer(req.params.id, req.body);
+      res.json({
+        success: true,
+        data: customer,
+        message: 'Customer updated successfully'
+      });
+    } catch (err) {
+      res.error(err.message);
+    }
   }
-});
+);
 
 // Delete customer
 router.delete('/:id', authenticate, authorize(['customers.delete']), async (req, res) => {

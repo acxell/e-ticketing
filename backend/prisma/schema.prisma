@@ -99,7 +99,6 @@ model Ticket {
   assignedTo   User?              @relation("assignedTickets", fields: [assignedToId], references: [id])
   createdBy    User?              @relation("createdTickets", fields: [createdById], references: [id])
   customer     Customer           @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  attachments  TicketAttachment[]
   ticketLogs   TicketLog[]
 }
 
@@ -111,17 +110,10 @@ model TicketLog {
   fromStatus TicketStatus?
   toStatus   TicketStatus?
   createdAt  DateTime      @default(now())
+  updatedAt    DateTime    @updatedAt
+  updatedById    Int?        
   actor      User?         @relation(fields: [actorId], references: [id])
   ticket     Ticket        @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-}
-
-model TicketAttachment {
-  id          Int      @id @default(autoincrement())
-  ticketId    Int
-  images      Json
-  description String?
-  uploadedAt  DateTime @default(now())
-  ticket      Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
 }
 
 enum RoleName {

@@ -75,8 +75,10 @@ const findTickets = async (filters = {}) => {
             },
           },
         },
+        orderBy: {
+          createdAt: 'desc'
+        },
       },
-      attachments: true,
     },
     orderBy: {
       createdAt: "desc",
@@ -117,23 +119,40 @@ const findTicketById = async (id) => {
           createdAt: "desc",
         },
       },
-      attachments: true,
     },
   });
 };
 
 const createTicket = async (ticketData, userId) => {
+  const ticketCode = `TKT-${uuidv4().substring(0, 8).toUpperCase()}`;
+  
   return await prisma.ticket.create({
     data: {
       ...ticketData,
-      ticketCode: `TKT-${uuidv4().substring(0, 8).toUpperCase()}`,
+      ticketCode,
       createdById: userId,
+      updatedById: userId,
       ticketLogs: {
-        create: {
-          actorId: userId,
-          note: "Ticket created",
-          toStatus: "OPEN",
-        },
+        create: [
+          {
+            actorId: userId,
+            updatedById: userId,
+            note: `Ticket ${ticketCode} created`,
+            toStatus: "OPEN",
+          },
+          // Add assignment log if there's an initial assignee
+          ...(ticketData.assignedToId ? [{
+            actorId: userId,
+            updatedById: userId,
+            note: `Initial assignment set`,
+          }] : []),
+          // Add priority log if priority is set
+          ...(ticketData.priority ? [{
+            actorId: userId,
+            updatedById: userId,
+            note: `Initial priority set to ${ticketData.priority}`,
+          }] : []),
+        ],
       },
     },
     include: {
@@ -184,20 +203,37 @@ const updateTicketStatus = async (id, status, userId, note) => {
           actor: true,
         },
       },
-      attachments: true,
     },
   });
 };
 
 const assignTicket = async (id, assignedToId, userId) => {
+  const ticket = await findTicketById(id);
+  if (!ticket) {
+    throw new Error("Ticket not found");
+  }
+
+  // Get the assigned user's info for the log message
+  const assignedUser = await prisma.user.findUnique({
+    where: { id: parseInt(assignedToId) },
+    select: { fullName: true, username: true }
+  });
+
+  const previousAssignee = ticket.assignedTo;
+  const logMessage = previousAssignee 
+    ? `Ticket reassigned from ${previousAssignee.fullName || previousAssignee.username} to ${assignedUser.fullName || assignedUser.username}`
+    : `Ticket assigned to ${assignedUser.fullName || assignedUser.username}`;
+
   return await prisma.ticket.update({
     where: { id: parseInt(id) },
     data: {
       assignedToId: parseInt(assignedToId),
-      updatedAt: new Date(),
+      updatedById: userId,
       ticketLogs: {
         create: {
           actorId: userId,
+          updatedById: userId,
+          note: logMessage,
         },
       },
     },
@@ -214,24 +250,51 @@ const assignTicket = async (id, assignedToId, userId) => {
   });
 };
 
-const addTicketAttachment = async (id, attachmentData, userId) => {
+const updateTicket = async (id, updateData, userId) => {
+  const ticket = await findTicketById(id);
+  if (!ticket) {
+    throw new Error("Ticket not found");
+  }
+
+  const changes = [];
+  
+  // Track changes for logging
+  if (updateData.title !== ticket.title) {
+    changes.push(`Title updated from "${ticket.title}" to "${updateData.title}"`);
+  }
+  if (updateData.description !== ticket.description) {
+    changes.push("Description updated");
+  }
+  if (updateData.priority !== ticket.priority) {
+    changes.push(`Priority changed from ${ticket.priority} to ${updateData.priority}`);
+  }
+
+  // Create logs for all changes
+  const ticketLogs = changes.map(change => ({
+    actorId: userId,
+    note: change,
+  }));
+
   return await prisma.ticket.update({
     where: { id: parseInt(id) },
     data: {
-      attachments: {
-        create: {
-          ...attachmentData,
-        },
-      },
+      ...updateData,
+      updatedById: userId,
       ticketLogs: {
-        create: {
+        create: ticketLogs.length > 0 ? ticketLogs.map(log => ({
+          ...log,
+          updatedById: userId
+        })) : [{
           actorId: userId,
-          note: "Added attachment to ticket",
-        },
+          updatedById: userId,
+          note: "Ticket updated",
+        }],
       },
     },
     include: {
-      attachments: true,
+      customer: true,
+      assignedTo: true,
+      createdBy: true,
       ticketLogs: {
         include: {
           actor: true,
@@ -247,5 +310,5 @@ module.exports = {
   createTicket,
   updateTicketStatus,
   assignTicket,
-  addTicketAttachment,
+  updateTicket,
 };
