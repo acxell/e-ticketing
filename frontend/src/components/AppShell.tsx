@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   AppShell,
   Text,
@@ -16,13 +16,38 @@ import {
 import { usePathname, useRouter } from 'next/navigation';
 import { IconUsers, IconTicket, IconLogout, IconPackage, IconUserDollar, IconHome, IconBook, IconUserPentagon } from '@tabler/icons-react';
 import { useAuthStore } from '@/lib/store';
+import { fetchCurrentUser } from '@/lib/api';
 import { hasRole, ROLES, PERMISSIONS } from '@/lib/permissions';
 
 export default function AppShellLayout({ children }: { children: React.ReactNode }) {
   const [opened, setOpened] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const { logout, user } = useAuthStore();
+  const { logout, user, setUser } = useAuthStore();
+  
+  useEffect(() => {
+    const initializeUser = async () => {
+      try {
+        // Try to load from localStorage first
+        const storedUserData = localStorage.getItem('userData');
+        if (!user && storedUserData) {
+          setUser(JSON.parse(storedUserData));
+        }
+        
+        // Then fetch fresh data from the server
+        const userData = await fetchCurrentUser();
+        setUser(userData);
+      } catch (error) {
+        console.error('Error loading user data:', error);
+        // If there's an error fetching user data, redirect to login
+        router.push('/login');
+      }
+    };
+
+    if (!user) {
+      initializeUser();
+    }
+  }, []);
 
   const handleLogout = () => {
     logout();

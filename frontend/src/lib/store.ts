@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { deleteCookie, getCookie, setCookie } from 'cookies-next';
 
 interface AuthStore {
@@ -9,16 +10,33 @@ interface AuthStore {
   logout: () => void;
 }
 
-export const useAuthStore = create<AuthStore>((set) => ({
-  token: getCookie('token') as string || null,
-  user: null,
-  setToken: (token) => {
-    setCookie('token', token);
-    set({ token });
-  },
-  setUser: (user) => set({ user }),
-  logout: () => {
-    deleteCookie('token');
-    set({ token: null, user: null });
-  },
-}));
+export const useAuthStore = create<AuthStore>()(
+  persist(
+    (set) => ({
+      token: getCookie('token') as string || null,
+      user: null,
+      setToken: (token) => {
+        setCookie('token', token);
+        set({ token });
+      },
+      setUser: (user) => {
+        set({ user });
+        // Store user data in localStorage
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('userData', JSON.stringify(user));
+        }
+      },
+      logout: () => {
+        deleteCookie('token');
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('userData');
+        }
+        set({ token: null, user: null });
+      },
+    }),
+    {
+      name: 'auth-storage',
+      storage: createJSONStorage(() => localStorage),
+    }
+  )
+);

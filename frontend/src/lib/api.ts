@@ -50,3 +50,13 @@ export const setAuthToken = (token: string) => {
   });
   api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 };
+
+export const fetchCurrentUser = async () => {
+  try {
+    const { data } = await api.get('/auth/me');
+    return data.data;
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+    throw error;
+  }
+};

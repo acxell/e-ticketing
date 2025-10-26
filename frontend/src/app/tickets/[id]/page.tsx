@@ -78,6 +78,22 @@ export default function TicketDetailPage({ params }: { params: { id: string } })
     },
   });
 
+  // Query for assignable users
+  const { data: assignableUsers } = useQuery(
+    ['assignableUsers'],
+    async () => {
+      const response = await api.get('/users', {
+        params: {
+          excludeRoles: ['ADMIN', 'CUSTOMER_SERVICE'].join(','),
+        },
+      });
+      return response.data;
+    },
+    {
+      enabled: hasRole(user, [ROLES.ADMIN, ROLES.AGENT_NOC]),
+    }
+  );
+
   const updateMutation = useMutation(
     async (values: typeof form.values) => {
       const { data } = await api.patch(`/tickets/${ticketId}/status`, values);
@@ -92,6 +108,31 @@ export default function TicketDetailPage({ params }: { params: { id: string } })
           color: 'green',
         });
         form.reset();
+      },
+      onError: (error: any) => {
+        notifications.show({
+          title: 'Error',
+          message: error.response?.data?.error || 'Something went wrong',
+          color: 'red',
+        });
+      },
+    }
+  );
+
+  // Add assignMutation
+  const assignMutation = useMutation(
+    async (assignedToId: number) => {
+      const { data } = await api.patch(`/tickets/${ticketId}/assign`, { assignedToId });
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['ticket', ticketId]);
+        notifications.show({
+          title: 'Success',
+          message: 'Ticket assigned successfully',
+          color: 'green',
+        });
       },
       onError: (error: any) => {
         notifications.show({
@@ -245,6 +286,42 @@ export default function TicketDetailPage({ params }: { params: { id: string } })
               </Box>
             </Stack>
           </Card>
+
+          {/* Assign Ticket Card - Only visible to NOC and Admin */}
+          {canUpdateStatus && (
+            <Card
+              shadow="sm"
+              p="lg"
+              radius="md"
+              mb="lg"
+              style={{
+                border: '1px solid #e2e8f0',
+                background: 'white',
+              }}
+            >
+              <Text fw={700} size="lg" mb="md">
+                Assign Ticket
+              </Text>
+              <Stack>
+                <Select
+                  label="Assign to"
+                  placeholder="Select user to assign"
+                  data={
+                    assignableUsers?.data?.map((user: any) => ({
+                      value: user.id.toString(),
+                      label: user.fullName || user.username,
+                    })) || []
+                  }
+                  size="md"
+                  onChange={(value) => value && assignMutation.mutate(parseInt(value))}
+                  styles={{
+                    label: { fontWeight: 600, marginBottom: 6 },
+                    input: { border: '1px solid #cbd5e1' },
+                  }}
+                />
+              </Stack>
+            </Card>
+          )}
 
           {/* Update Status Card - Only visible to NOC and Admin */}
           {canUpdateStatus && (

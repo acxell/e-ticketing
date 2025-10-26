@@ -5,7 +5,10 @@ const {
   updateTicketStatus,
   assignTicket,
   updateTicket,
+  getActiveTicketsCount,
 } = require('./tickets.repository');
+
+const MAX_ACTIVE_TICKETS = 3;
 
 const getAllTickets = async (filters) => {
   return await findTickets(filters);
@@ -20,6 +23,12 @@ const getTicketById = async (id) => {
 };
 
 const createNewTicket = async (ticketData, userId) => {
+  const activeTickets = await getActiveTicketsCount(ticketData.customerId);
+
+  if (activeTickets >= MAX_ACTIVE_TICKETS) {
+    throw new Error(`Customer has reached the maximum limit of ${MAX_ACTIVE_TICKETS} active tickets`);
+  }
+
   if (!ticketData.customerId || !ticketData.title) {
     throw new Error('Customer ID and title are required');
   }

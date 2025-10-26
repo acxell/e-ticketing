@@ -131,25 +131,21 @@ const createTicket = async (ticketData, userId) => {
       ...ticketData,
       ticketCode,
       createdById: userId,
-      updatedById: userId,
       ticketLogs: {
         create: [
           {
             actorId: userId,
-            updatedById: userId,
             note: `Ticket ${ticketCode} created`,
             toStatus: "OPEN",
           },
           // Add assignment log if there's an initial assignee
           ...(ticketData.assignedToId ? [{
             actorId: userId,
-            updatedById: userId,
             note: `Initial assignment set`,
           }] : []),
           // Add priority log if priority is set
           ...(ticketData.priority ? [{
             actorId: userId,
-            updatedById: userId,
             note: `Initial priority set to ${ticketData.priority}`,
           }] : []),
         ],
@@ -228,11 +224,11 @@ const assignTicket = async (id, assignedToId, userId) => {
     where: { id: parseInt(id) },
     data: {
       assignedToId: parseInt(assignedToId),
-      updatedById: userId,
+      
       ticketLogs: {
         create: {
           actorId: userId,
-          updatedById: userId,
+          
           note: logMessage,
         },
       },
@@ -279,14 +275,12 @@ const updateTicket = async (id, updateData, userId) => {
     where: { id: parseInt(id) },
     data: {
       ...updateData,
-      updatedById: userId,
       ticketLogs: {
         create: ticketLogs.length > 0 ? ticketLogs.map(log => ({
           ...log,
           updatedById: userId
         })) : [{
           actorId: userId,
-          updatedById: userId,
           note: "Ticket updated",
         }],
       },
@@ -304,6 +298,17 @@ const updateTicket = async (id, updateData, userId) => {
   });
 };
 
+const getActiveTicketsCount = async (customerId) => {
+  return await prisma.ticket.count({
+    where: {
+      customerId,
+      status: {
+        in: ['OPEN', 'IN_PROGRESS']
+      }
+    }
+  });
+};
+
 module.exports = {
   findTickets,
   findTicketById,
@@ -311,4 +316,5 @@ module.exports = {
   updateTicketStatus,
   assignTicket,
   updateTicket,
+  getActiveTicketsCount,
 };

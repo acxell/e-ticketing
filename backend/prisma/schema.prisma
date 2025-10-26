@@ -111,7 +111,6 @@ model TicketLog {
   toStatus   TicketStatus?
   createdAt  DateTime      @default(now())
   updatedAt    DateTime    @updatedAt
-  updatedById    Int?        
   actor      User?         @relation(fields: [actorId], references: [id])
   ticket     Ticket        @relation(fields: [ticketId], references: [id], onDelete: Cascade)
 }

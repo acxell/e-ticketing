@@ -98,7 +98,7 @@ export default function UsersPage() {
   // Update user mutation
   const updateMutation = useMutation(
     async (values: typeof form.values) => {
-      const response = await api.put('/users/' + selectedUser.id, values);
+      const response = await api.patch('/users/' + selectedUser.id, values);
       return response.data;
     },
     {
